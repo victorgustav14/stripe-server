@@ -1,7 +1,7 @@
 // server.js
 const express = require('express');
 const app = express();
-const stripe = require('stripe')('DIN_STRIPE_SECRET_KEY'); // Sätt din Stripe Secret Key här
+const stripe = require('stripe')('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'); // Sätt din Stripe Secret Key här
 app.use(express.json());
 app.use(require('cors')()); // Tillåter att Brizy skickar data
 
@@ -17,8 +17,8 @@ app.post('/create-checkout-session', async (req, res) => {
             payment_method_types: ['card'],
             line_items: lineItems,
             mode: 'payment',
-            success_url: 'https://dinhemsida.se/success',
-            cancel_url: 'https://dinhemsida.se/cancel',
+            success_url: 'https://techshelf.se/success',
+            cancel_url: 'https://techshelf.se/cancel',
         });
         res.json({ url: session.url });
     } catch (err) {
