@@ -1,9 +1,11 @@
 // server.js
 const express = require('express');
 const app = express();
-const stripe = require('stripe')('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'); // Sätt din Stripe Secret Key här
+const cors = require('cors');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY); // 🔒 Hämtar nyckeln säkert från Render Environment
+
 app.use(express.json());
-app.use(require('cors')()); // Tillåter att Brizy skickar data
+app.use(cors()); // Tillåter att Brizy skickar data
 
 app.post('/create-checkout-session', async (req, res) => {
     const { products } = req.body; // Array med valda produkter och antal
@@ -22,8 +24,12 @@ app.post('/create-checkout-session', async (req, res) => {
         });
         res.json({ url: session.url });
     } catch (err) {
+        console.error('Stripe error:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
 
-app.listen(process.env.PORT || 3000, () => console.log('Server running'));
+app.listen(process.env.PORT || 3000, () => {
+    console.log('Server running');
+    console.log('Stripe key prefix:', process.env.STRIPE_SECRET_KEY?.slice(0, 8)); // 👀 Debug – visar bara "sk_live_"
+});
