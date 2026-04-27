@@ -1,28 +1,37 @@
+// server.js
+const express = require('express');
+const app = express();
+const cors = require('cors');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+app.use(express.json());
+app.use(cors());
+
 app.post('/create-checkout-session', async (req, res) => {
-    const { products } = req.body;
-
-    if (!products || !Array.isArray(products) || products.length === 0) {
-        return res.status(400).json({ error: 'No products provided' });
-    }
-
-    const lineItems = products.map(p => ({
-        price: p.priceId,
-        quantity: p.quantity
-    }));
-
-    // ✅ Räkna totalt antal produkter
-    const totalQuantity = products.reduce((sum, p) => sum + p.quantity, 0);
-
-    // ✅ Dynamisk fraktlogik
-    let shippingAmount = 12000; // default 120 kr
-
-    if (totalQuantity >= 5) {
-        shippingAmount = 25000;
-    } else if (totalQuantity >= 3) {
-        shippingAmount = 18000;
-    }
-
     try {
+        const { products } = req.body;
+
+        if (!products || !Array.isArray(products) || products.length === 0) {
+            return res.status(400).json({ error: 'No products provided' });
+        }
+
+        const lineItems = products.map(p => ({
+            price: p.priceId,
+            quantity: p.quantity
+        }));
+
+        // 🔢 Räkna antal
+        const totalQuantity = products.reduce((sum, p) => sum + p.quantity, 0);
+
+        // 🚚 Dynamisk frakt
+        let shippingAmount = 12000;
+
+        if (totalQuantity >= 5) {
+            shippingAmount = 25000;
+        } else if (totalQuantity >= 3) {
+            shippingAmount = 18000;
+        }
+
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: lineItems,
@@ -39,7 +48,6 @@ app.post('/create-checkout-session', async (req, res) => {
                 enabled: true,
             },
 
-            // ✅ Dynamisk frakt
             shipping_options: [
                 {
                     shipping_rate_data: {
@@ -57,7 +65,11 @@ app.post('/create-checkout-session', async (req, res) => {
         res.json({ url: session.url });
 
     } catch (err) {
-        console.error('Stripe error:', err.message);
+        console.error('ERROR:', err);
         res.status(500).json({ error: err.message });
     }
+});
+
+app.listen(process.env.PORT || 3000, () => {
+    console.log('Server running');
 });
