@@ -38,7 +38,7 @@ app.post('/create-checkout-session', async (req, res) => {
             mode: 'payment',
 
             success_url: 'https://techshelf.se/success',
-            cancel_url: 'https://techshelf.se/cancel',
+            cancel_url: 'https://techshelf.se',
 
             shipping_address_collection: {
                 allowed_countries: ['SE'],
